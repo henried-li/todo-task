@@ -9,7 +9,8 @@ let rootEl = null;
 let mode = "tab";
 let typeManagerOpen = false;
 let doneStripOpen = false;
-let dragId = null;
+let dragEl = null;
+let dragCommitted = false;
 
 function toISO(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -93,18 +94,54 @@ async function updateTask(id, patch) {
   render();
 }
 
-async function reorderTask(draggedId, targetId, before) {
-  if (draggedId === targetId) return;
-  const active = state.tasks.filter(t => !t.done).sort((a, b) => (a.order || 0) - (b.order || 0));
-  const dragged = active.find(t => t.id === draggedId);
-  const targetIdx = active.findIndex(t => t.id === targetId);
-  if (!dragged || targetIdx < 0) return;
-  const without = active.filter(t => t.id !== draggedId);
-  const insertIdx = without.findIndex(t => t.id === targetId) + (before ? 0 : 1);
-  without.splice(insertIdx, 0, dragged);
-  without.forEach((t, i) => { t.order = i + 1; });
+async function commitDomOrder() {
+  const container = document.querySelector(".cards");
+  if (!container) return;
+  const ids = [...container.querySelectorAll(".card")].map(c => c.dataset.id);
+  const byId = new Map(state.tasks.map(t => [t.id, t]));
+  ids.forEach((id, i) => { const t = byId.get(id); if (t) t.order = i + 1; });
   await persist();
   render();
+}
+
+function snapshotCardTops(excludeId) {
+  const container = document.querySelector(".cards");
+  if (!container) return new Map();
+  const tops = new Map();
+  container.querySelectorAll(".card").forEach(c => {
+    if (excludeId == null || c.dataset.id !== excludeId) {
+      tops.set(c.dataset.id, c.getBoundingClientRect().top);
+    }
+  });
+  return tops;
+}
+
+function applyFlipFromTops(oldTops) {
+  const container = document.querySelector(".cards");
+  if (!container) return;
+  container.querySelectorAll(".card").forEach(c => {
+    const oldTop = oldTops.get(c.dataset.id);
+    if (oldTop == null) return;
+    const delta = oldTop - c.getBoundingClientRect().top;
+    if (!delta) return;
+    c.style.transition = "none";
+    c.style.transform = `translateY(${delta}px)`;
+    void c.offsetHeight;
+    c.style.transition = "";
+    c.style.transform = "";
+  });
+}
+
+function flipReorder(mutate) {
+  const tops = snapshotCardTops(dragEl ? dragEl.dataset.id : null);
+  mutate();
+  applyFlipFromTops(tops);
+}
+
+function flipRevert() {
+  const tops = snapshotCardTops();
+  render();
+  applyFlipFromTops(tops);
 }
 
 async function addType(name, color) {
@@ -177,33 +214,31 @@ function renderCard(task) {
 
   if (!task.done) {
     card.addEventListener("dragstart", e => {
-      dragId = task.id;
+      dragEl = card;
+      dragCommitted = false;
       card.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", task.id);
     });
     card.addEventListener("dragend", () => {
       card.classList.remove("dragging");
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("drop-before", "drop-after"));
-      dragId = null;
+      const wasCommitted = dragCommitted;
+      if (!wasCommitted) flipRevert();
+      dragEl = null;
+      dragCommitted = false;
     });
     card.addEventListener("dragover", e => {
-      if (!dragId || dragId === task.id) return;
+      if (!dragEl) return;
       e.preventDefault();
+      if (dragEl === card) return;
       const rect = card.getBoundingClientRect();
       const before = e.clientY < rect.top + rect.height / 2;
-      card.classList.toggle("drop-before", before);
-      card.classList.toggle("drop-after", !before);
-    });
-    card.addEventListener("dragleave", () => {
-      card.classList.remove("drop-before", "drop-after");
-    });
-    card.addEventListener("drop", e => {
-      e.preventDefault();
-      if (!dragId || dragId === task.id) return;
-      const rect = card.getBoundingClientRect();
-      const before = e.clientY < rect.top + rect.height / 2;
-      reorderTask(dragId, task.id, before);
+      const alreadyBefore = before && card.previousElementSibling === dragEl;
+      const alreadyAfter = !before && card.nextElementSibling === dragEl;
+      if (alreadyBefore || alreadyAfter) return;
+      flipReorder(() => {
+        card.parentNode.insertBefore(dragEl, before ? card : card.nextSibling);
+      });
     });
   }
 
@@ -349,7 +384,18 @@ function renderActiveCards() {
       el("div", { class: "empty-text" }, "No active tasks. Add one above."),
     ]);
   }
-  return el("div", { class: "cards" }, active.map(renderCard));
+  const container = el("div", { class: "cards" }, active.map(renderCard));
+  container.addEventListener("dragover", e => {
+    if (!dragEl) return;
+    e.preventDefault();
+  });
+  container.addEventListener("drop", e => {
+    if (!dragEl) return;
+    e.preventDefault();
+    dragCommitted = true;
+    commitDomOrder();
+  });
+  return container;
 }
 
 function renderDoneStrip() {
