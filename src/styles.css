@@ -159,14 +159,14 @@ input, select {
 .card {
   position: relative;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 10px;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
   align-items: start;
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius);
-  padding: 12px 14px 12px 8px;
+  padding: 12px 14px 12px 22px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
 }
@@ -177,12 +177,15 @@ input, select {
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
 
-/* 6-dot drag handle on the left of each active card. Faint by default,
-   brightens on hover. Drag is initiated only from this element. */
+/* 6-dot drag handle, absolutely positioned on the card's left padding
+   so it doesn't take a grid column. Faint by default, brightens on hover. */
 .card-drag-handle {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 12px;
   height: 22px;
-  align-self: center;
   cursor: grab;
   color: var(--muted);
   opacity: 0.3;
@@ -192,9 +195,10 @@ input, select {
   background-position: center;
   background-size: 6px 14px;
 }
-.card-drag-handle:hover { opacity: 0.85; }
+.card:hover .card-drag-handle { opacity: 0.6; }
+.card-drag-handle:hover { opacity: 1 !important; }
 .card-drag-handle:active { cursor: grabbing; opacity: 1; }
-.card-done .card-drag-handle { visibility: hidden; }
+.card-done .card-drag-handle { display: none; }
 
 .card-check {
   width: 22px;
