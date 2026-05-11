@@ -164,10 +164,10 @@ input, select {
   align-items: start;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
   border-radius: var(--radius);
-  padding: 12px 14px 12px 18px;
+  padding: 12px 14px;
   box-shadow: var(--shadow);
-  overflow: hidden;
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
 }
 .card:hover { box-shadow: var(--shadow-hover); }
@@ -177,22 +177,18 @@ input, select {
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
 
-/* The left color bar identifies the task type AND is the drag handle.
-   Sits flush against the card's left edge; widens slightly on hover for
-   feedback that it's grabbable. */
-.card-color-bar {
+/* Invisible drag region over the card's left padding. Hovering it turns
+   the cursor into a grab; the user drags the whole card from there. */
+.card-drag-zone {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 14px;
   cursor: grab;
-  transition: width 0.15s, filter 0.15s;
 }
-.card-color-bar:hover { width: 8px; filter: brightness(1.1); }
-.card-color-bar:active { cursor: grabbing; }
-.card-done .card-color-bar { cursor: default; }
-.card-done .card-color-bar:hover { width: 4px; filter: none; }
+.card-drag-zone:active { cursor: grabbing; }
+.card-done .card-drag-zone { cursor: default; pointer-events: none; }
 
 .card-check {
   width: 22px;
