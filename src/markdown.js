@@ -12,6 +12,17 @@ function safeHref(url) {
   return "#";
 }
 
+// Display label for an autolinked bare URL — just the hostname, with `www.`
+// stripped. The full URL is kept in href and the title attribute. Falls back
+// to the raw URL string if parsing fails.
+function shortLinkText(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 function tokenize(src) {
   const lines = src.split("\n");
   const blocks = [];
@@ -69,14 +80,16 @@ function renderInline(s) {
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) =>
     place(`<a href="${safeHref(u)}" target="_blank" rel="noopener noreferrer">${t}</a>`));
 
-  // 3. Autolink bare URLs (http/https)
+  // 3. Autolink bare URLs (http/https); display as hostname for readability,
+  //    keep the full URL in href and title.
   s = s.replace(/\bhttps?:\/\/[^\s<>"]+/g, (url) => {
     let trail = "";
     while (/[.,;:!?]$/.test(url)) {
       trail = url.slice(-1) + trail;
       url = url.slice(0, -1);
     }
-    return place(`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`) + trail;
+    const label = shortLinkText(url);
+    return place(`<a href="${url}" class="autolink" title="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`) + trail;
   });
 
   // 4. Bold then italic

@@ -360,6 +360,11 @@ input, select {
 .markdown li { margin: 2px 0; }
 .markdown a { color: var(--accent); text-decoration: none; }
 .markdown a:hover { text-decoration: underline; }
+.markdown a.autolink::after {
+  content: " ↗";
+  font-size: 0.85em;
+  opacity: 0.55;
+}
 .markdown code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
