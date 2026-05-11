@@ -177,15 +177,17 @@ input, select {
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
 
-/* Invisible drag region over the card's left padding. Hovering it turns
-   the cursor into a grab; the user drags the whole card from there. */
+/* Invisible drag region covering the colored bar + the card's left
+   padding. Hovering anywhere in this left strip turns the cursor into
+   a grab; the user drags the whole card from there. */
 .card-drag-zone {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 14px;
+  top: -1px;
+  bottom: -1px;
+  left: -4px;
+  width: 18px;
   cursor: grab;
+  z-index: 1;
 }
 .card-drag-zone:active { cursor: grabbing; }
 .card-done .card-drag-zone { cursor: default; pointer-events: none; }
