@@ -1,0 +1,6 @@
+# macOS Finder
+.DS_Store
+
+# Node (only relevant if dependencies are ever installed; tests use Node's built-in runner)
+node_modules/
+*.log
