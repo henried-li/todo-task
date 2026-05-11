@@ -59,21 +59,43 @@ test("markdown link opens in new tab with noopener", () => {
   assert.match(out, />Google</);
 });
 
-test("bare URLs are auto-linkified", () => {
+test("bare URLs are autolinked and display as hostname", () => {
   const out = renderMarkdown("Check https://example.com out");
   assert.match(out, /<a href="https:\/\/example\.com"/);
-  assert.match(out, />https:\/\/example\.com</);
+  assert.match(out, /class="autolink"/);
+  assert.match(out, /title="https:\/\/example\.com"/);
+  assert.match(out, />example\.com<\/a>/);
+});
+
+test("autolink strips www. prefix from displayed hostname", () => {
+  const out = renderMarkdown("see https://www.example.com/foo");
+  assert.match(out, />example\.com<\/a>/);
+  // full URL still preserved in href + title
+  assert.match(out, /href="https:\/\/www\.example\.com\/foo"/);
+});
+
+test("long URL display collapses to just the hostname", () => {
+  const out = renderMarkdown("https://doordash.slack.com/archives/C04LU23A27N/p1778368006860889");
+  assert.match(out, />doordash\.slack\.com<\/a>/);
+  assert.match(out, /href="https:\/\/doordash\.slack\.com\/archives\/C04LU23A27N\/p1778368006860889"/);
 });
 
 test("trailing punctuation is stripped from autolinks", () => {
   const out = renderMarkdown("Visit https://example.com.");
-  // The . should be outside the <a>
-  assert.match(out, /<a href="https:\/\/example\.com"[^>]*>https:\/\/example\.com<\/a>\./);
+  // The . should be outside the <a>; display is hostname
+  assert.match(out, /<a href="https:\/\/example\.com"[^>]*>example\.com<\/a>\./);
 });
 
-test("Wikipedia-style URL keeps trailing close-paren", () => {
+test("Wikipedia-style URL keeps trailing close-paren in href", () => {
   const out = renderMarkdown("See https://en.wikipedia.org/wiki/Foo_(bar) here");
   assert.match(out, /href="https:\/\/en\.wikipedia\.org\/wiki\/Foo_\(bar\)"/);
+  assert.match(out, />en\.wikipedia\.org<\/a>/);
+});
+
+test("explicit [text](url) markdown link keeps the user-provided text and no autolink class", () => {
+  const out = renderMarkdown("[Google](https://google.com)");
+  assert.match(out, />Google<\/a>/);
+  assert.doesNotMatch(out, /class="autolink"/);
 });
 
 test("HTML in source is escaped, not executed", () => {

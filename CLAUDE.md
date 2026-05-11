@@ -38,6 +38,7 @@ When adding new pure functions, add tests for them. When touching `markdown.js`,
 - For UI changes, reload the side panel in Chrome to confirm before reporting done. Type-checking and tests verify code correctness, not feature correctness.
 - For structural manifest changes (adding/removing permissions, the service worker, `chrome_url_overrides`, etc.), the user must fully **Remove** + **Load unpacked** the extension — Chrome's reload icon doesn't reliably pick those up. Tell them.
 - Manifest V3 forbids inline `<script>` blocks (even `type="module"`) under the default CSP. Always use external script files.
+- Add a one-line entry to `CHANGELOG.md` under `## Unreleased` for every user-visible change. Use past tense, link the PR number. Skip docs-only edits, internal refactors with no behavior change, test-only changes, and tooling tweaks (`.gitignore`, `package.json` scripts, etc.).
 
 ## Out of scope
 
