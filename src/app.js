@@ -170,27 +170,19 @@ function renderCard(task) {
   const type = findType(state.types, task.typeId);
   const card = el("div", {
     class: `card ${task.done ? "card-done" : ""}`,
+    draggable: task.done ? "false" : "true",
     style: { borderLeftColor: type.color },
     dataset: { id: task.id }
   });
 
-  const dragZone = el("div", {
-    class: "card-drag-zone",
-    draggable: task.done ? "false" : "true",
-    title: task.done ? null : "Drag to reorder",
-    "aria-label": task.done ? null : "Drag to reorder"
-  });
-
   if (!task.done) {
-    dragZone.addEventListener("dragstart", e => {
+    card.addEventListener("dragstart", e => {
       dragId = task.id;
       card.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", task.id);
-      const rect = card.getBoundingClientRect();
-      e.dataTransfer.setDragImage(card, e.clientX - rect.left, e.clientY - rect.top);
     });
-    dragZone.addEventListener("dragend", () => {
+    card.addEventListener("dragend", () => {
       card.classList.remove("dragging");
       document.querySelectorAll(".card").forEach(c => c.classList.remove("drop-before", "drop-after"));
       dragId = null;
@@ -301,7 +293,6 @@ function renderCard(task) {
   }, "×");
 
   const main = el("div", { class: "card-main" }, [titleEl, noteEl, meta]);
-  card.appendChild(dragZone);
   card.appendChild(checkbox);
   card.appendChild(main);
   card.appendChild(del);

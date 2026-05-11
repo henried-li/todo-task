@@ -169,28 +169,17 @@ input, select {
   padding: 12px 14px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+  cursor: grab;
 }
+.card-done { cursor: default; }
 .card:hover { box-shadow: var(--shadow-hover); }
-.card.dragging { opacity: 0.4; }
+.card.dragging { opacity: 0.4; cursor: grabbing; }
 .card.drop-before { box-shadow: 0 -3px 0 var(--accent), var(--shadow); }
 .card.drop-after { box-shadow: 0 3px 0 var(--accent), var(--shadow); }
+/* Inner element cursors override the card's grab cursor so it only
+   "shows through" in blank padding / left-gutter areas. */
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
-
-/* Invisible drag region covering the colored bar + the card's left
-   padding. Hovering anywhere in this left strip turns the cursor into
-   a grab; the user drags the whole card from there. */
-.card-drag-zone {
-  position: absolute;
-  top: -1px;
-  bottom: -1px;
-  left: -4px;
-  width: 18px;
-  cursor: grab;
-  z-index: 1;
-}
-.card-drag-zone:active { cursor: grabbing; }
-.card-done .card-drag-zone { cursor: default; pointer-events: none; }
 
 .card-check {
   width: 22px;
