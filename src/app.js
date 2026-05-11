@@ -101,16 +101,28 @@ async function commitDomOrder() {
   const byId = new Map(state.tasks.map(t => [t.id, t]));
   ids.forEach((id, i) => { const t = byId.get(id); if (t) t.order = i + 1; });
   await persist();
+  render();
 }
 
-function flipReorder(mutate) {
+function snapshotCardTops(excludeId) {
   const container = document.querySelector(".cards");
-  if (!container) { mutate(); return; }
-  const cards = [...container.querySelectorAll(".card")].filter(c => c !== dragEl);
-  const positions = new Map(cards.map(c => [c, c.getBoundingClientRect().top]));
-  mutate();
-  cards.forEach(c => {
-    const delta = positions.get(c) - c.getBoundingClientRect().top;
+  if (!container) return new Map();
+  const tops = new Map();
+  container.querySelectorAll(".card").forEach(c => {
+    if (excludeId == null || c.dataset.id !== excludeId) {
+      tops.set(c.dataset.id, c.getBoundingClientRect().top);
+    }
+  });
+  return tops;
+}
+
+function applyFlipFromTops(oldTops) {
+  const container = document.querySelector(".cards");
+  if (!container) return;
+  container.querySelectorAll(".card").forEach(c => {
+    const oldTop = oldTops.get(c.dataset.id);
+    if (oldTop == null) return;
+    const delta = oldTop - c.getBoundingClientRect().top;
     if (!delta) return;
     c.style.transition = "none";
     c.style.transform = `translateY(${delta}px)`;
@@ -118,6 +130,18 @@ function flipReorder(mutate) {
     c.style.transition = "";
     c.style.transform = "";
   });
+}
+
+function flipReorder(mutate) {
+  const tops = snapshotCardTops(dragEl ? dragEl.dataset.id : null);
+  mutate();
+  applyFlipFromTops(tops);
+}
+
+function flipRevert() {
+  const tops = snapshotCardTops();
+  render();
+  applyFlipFromTops(tops);
 }
 
 async function addType(name, color) {
@@ -199,9 +223,9 @@ function renderCard(task) {
     card.addEventListener("dragend", () => {
       card.classList.remove("dragging");
       const wasCommitted = dragCommitted;
+      if (!wasCommitted) flipRevert();
       dragEl = null;
       dragCommitted = false;
-      if (!wasCommitted) render();
     });
     card.addEventListener("dragover", e => {
       if (!dragEl) return;
@@ -215,12 +239,6 @@ function renderCard(task) {
       flipReorder(() => {
         card.parentNode.insertBefore(dragEl, before ? card : card.nextSibling);
       });
-    });
-    card.addEventListener("drop", e => {
-      if (!dragEl) return;
-      e.preventDefault();
-      dragCommitted = true;
-      commitDomOrder();
     });
   }
 
