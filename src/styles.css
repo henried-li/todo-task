@@ -164,10 +164,10 @@ input, select {
   align-items: start;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
   border-radius: var(--radius);
   padding: 12px 14px 12px 22px;
   box-shadow: var(--shadow);
+  overflow: hidden;
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
 }
 .card:hover { box-shadow: var(--shadow-hover); }
@@ -177,27 +177,22 @@ input, select {
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
 
-/* 6-dot drag handle, absolutely positioned on the card's left padding
-   so it doesn't take a grid column. Faint by default, brightens on hover. */
-.card-drag-handle {
+/* The left color bar identifies the task type AND is the drag handle.
+   Sits flush against the card's left edge; widens slightly on hover for
+   feedback that it's grabbable. */
+.card-color-bar {
   position: absolute;
-  left: 4px;
-  top: 60%;
-  width: 12px;
-  height: 22px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
   cursor: grab;
-  color: var(--muted);
-  opacity: 0.3;
-  transition: opacity 0.15s;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 14" fill="currentColor"><circle cx="1.5" cy="2" r="1"/><circle cx="4.5" cy="2" r="1"/><circle cx="1.5" cy="7" r="1"/><circle cx="4.5" cy="7" r="1"/><circle cx="1.5" cy="12" r="1"/><circle cx="4.5" cy="12" r="1"/></svg>');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 6px 14px;
+  transition: width 0.15s, filter 0.15s;
 }
-.card:hover .card-drag-handle { opacity: 0.6; }
-.card-drag-handle:hover { opacity: 1 !important; }
-.card-drag-handle:active { cursor: grabbing; opacity: 1; }
-.card-done .card-drag-handle { display: none; }
+.card-color-bar:hover { width: 12px; filter: brightness(1.1); }
+.card-color-bar:active { cursor: grabbing; }
+.card-done .card-color-bar { cursor: default; }
+.card-done .card-color-bar:hover { width: 8px; filter: none; }
 
 .card-check {
   width: 22px;

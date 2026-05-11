@@ -170,28 +170,28 @@ function renderCard(task) {
   const type = findType(state.types, task.typeId);
   const card = el("div", {
     class: `card ${task.done ? "card-done" : ""}`,
-    style: { borderLeftColor: type.color },
     dataset: { id: task.id }
   });
 
-  const handle = el("div", {
-    class: "card-drag-handle",
+  const colorBar = el("div", {
+    class: "card-color-bar",
     draggable: task.done ? "false" : "true",
     title: task.done ? null : "Drag to reorder",
-    "aria-label": task.done ? null : "Drag to reorder"
+    "aria-label": task.done ? null : "Drag to reorder",
+    style: { backgroundColor: type.color }
   });
 
   if (!task.done) {
-    handle.addEventListener("dragstart", e => {
+    colorBar.addEventListener("dragstart", e => {
       dragId = task.id;
       card.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", task.id);
-      // Make the drag image the whole card, not just the handle.
+      // Make the drag image the whole card, not just the bar.
       const rect = card.getBoundingClientRect();
       e.dataTransfer.setDragImage(card, e.clientX - rect.left, e.clientY - rect.top);
     });
-    handle.addEventListener("dragend", () => {
+    colorBar.addEventListener("dragend", () => {
       card.classList.remove("dragging");
       document.querySelectorAll(".card").forEach(c => c.classList.remove("drop-before", "drop-after"));
       dragId = null;
@@ -302,7 +302,7 @@ function renderCard(task) {
   }, "×");
 
   const main = el("div", { class: "card-main" }, [titleEl, noteEl, meta]);
-  card.appendChild(handle);
+  card.appendChild(colorBar);
   card.appendChild(checkbox);
   card.appendChild(main);
   card.appendChild(del);
