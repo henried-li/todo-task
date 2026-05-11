@@ -165,7 +165,7 @@ input, select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px 12px 22px;
+  padding: 12px 14px 12px 18px;
   box-shadow: var(--shadow);
   overflow: hidden;
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
@@ -185,14 +185,14 @@ input, select {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 8px;
+  width: 4px;
   cursor: grab;
   transition: width 0.15s, filter 0.15s;
 }
-.card-color-bar:hover { width: 12px; filter: brightness(1.1); }
+.card-color-bar:hover { width: 8px; filter: brightness(1.1); }
 .card-color-bar:active { cursor: grabbing; }
 .card-done .card-color-bar { cursor: default; }
-.card-done .card-color-bar:hover { width: 8px; filter: none; }
+.card-done .card-color-bar:hover { width: 4px; filter: none; }
 
 .card-check {
   width: 22px;
