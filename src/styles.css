@@ -159,25 +159,42 @@ input, select {
 .card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 10px;
   align-items: start;
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius);
-  padding: 12px 14px;
+  padding: 12px 14px 12px 8px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
-  cursor: grab;
 }
 .card:hover { box-shadow: var(--shadow-hover); }
-.card.dragging { opacity: 0.4; cursor: grabbing; }
+.card.dragging { opacity: 0.4; }
 .card.drop-before { box-shadow: 0 -3px 0 var(--accent), var(--shadow); }
 .card.drop-after { box-shadow: 0 3px 0 var(--accent), var(--shadow); }
-.card-done { cursor: default; }
 .card-title, .card-note { cursor: text; }
 .card-check, .card-del { cursor: pointer; }
+
+/* 6-dot drag handle on the left of each active card. Faint by default,
+   brightens on hover. Drag is initiated only from this element. */
+.card-drag-handle {
+  width: 12px;
+  height: 22px;
+  align-self: center;
+  cursor: grab;
+  color: var(--muted);
+  opacity: 0.3;
+  transition: opacity 0.15s;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 14" fill="currentColor"><circle cx="1.5" cy="2" r="1"/><circle cx="4.5" cy="2" r="1"/><circle cx="1.5" cy="7" r="1"/><circle cx="4.5" cy="7" r="1"/><circle cx="1.5" cy="12" r="1"/><circle cx="4.5" cy="12" r="1"/></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 6px 14px;
+}
+.card-drag-handle:hover { opacity: 0.85; }
+.card-drag-handle:active { cursor: grabbing; opacity: 1; }
+.card-done .card-drag-handle { visibility: hidden; }
 
 .card-check {
   width: 22px;
