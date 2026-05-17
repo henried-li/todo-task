@@ -11,6 +11,7 @@ let typeManagerOpen = false;
 let doneStripOpen = false;
 let dragEl = null;
 let dragCommitted = false;
+let pendingTypeId = null;
 
 function toISO(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -166,6 +167,7 @@ async function deleteType(id) {
   const fallback = state.types[0].id;
   state.tasks.forEach(t => { if (t.typeId === id) t.typeId = fallback; });
   if (state.settings.lastTypeId === id) state.settings.lastTypeId = fallback;
+  if (pendingTypeId === id) pendingTypeId = null;
   await persist();
   render();
 }
@@ -178,13 +180,15 @@ function renderQuickAdd() {
     autofocus: mode === "tab" ? true : null
   });
   const dateInput = el("input", { class: "qa-date", type: "date", value: tomorrowISO() });
-  const typeSelect = el("select", { class: "qa-type" },
-    state.types.map(t => {
-      const opt = el("option", { value: t.id }, t.name);
-      if (t.id === (state.settings.lastTypeId || state.types[0].id)) opt.selected = true;
-      return opt;
-    })
-  );
+  const selectedTypeId = pendingTypeId ?? state.settings.lastTypeId ?? state.types[0].id;
+  const typeSelect = el("select", {
+    class: "qa-type",
+    onchange: e => { pendingTypeId = e.target.value; }
+  }, state.types.map(t => {
+    const opt = el("option", { value: t.id }, t.name);
+    if (t.id === selectedTypeId) opt.selected = true;
+    return opt;
+  }));
   const submit = async () => {
     if (!input.value.trim()) return;
     await addTask({
@@ -192,6 +196,7 @@ function renderQuickAdd() {
       typeId: typeSelect.value,
       dueDate: dateInput.value || null
     });
+    pendingTypeId = null;
     input.value = "";
     dateInput.value = tomorrowISO();
     input.focus();
@@ -531,6 +536,7 @@ export async function init(root, surfaceMode) {
   rootEl = root;
   mode = surfaceMode || "tab";
   state = await loadState();
+  pendingTypeId = (state.types.find(t => t.id === "work") || state.types[0]).id;
   render();
   subscribe(newState => {
     if (!newState) return;

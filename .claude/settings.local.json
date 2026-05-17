@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout *)",
+      "Bash(git cherry-pick *)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(git *)"
+    ]
+  }
+}
